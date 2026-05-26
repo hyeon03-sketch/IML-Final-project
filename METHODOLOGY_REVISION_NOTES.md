@@ -113,6 +113,36 @@ Group B 성능이 좋아지면 공간 파생변수의 추가 예측력을 지지
 - `전월세구분` feature 추가 robustness check
 - Jeonse-only robustness check
 - VIF 기반 중복 변수 점검
+- academic-standard validation:
+  - mean/median naive baseline
+  - time holdout
+  - apartment-complex holdout
+  - administrative-dong holdout
+  - bootstrap confidence interval for Group B minus Group A RMSE improvement
 - optional SHAP analysis
 
 이 분석들은 원래 연구 질문을 대체하지 않는다. 메인 결론은 Group A와 Group B의 성능 비교를 기준으로 작성하고, supplementary analysis는 결론의 견고성을 확인하는 용도로만 사용한다.
+
+## 11. 학술 논문 기준으로 필요한 검증
+
+Random train/test split만으로는 학술 논문 수준의 일반화 주장을 하기 어렵다. 따라서 노트북에는 추가 검증을 포함했다.
+
+권장 문장:
+
+> In addition to the random train-test split, this study conducts stricter validation checks using time-based holdout, apartment-complex holdout, and administrative-dong holdout splits. These checks evaluate whether the model generalizes across time, unseen apartment complexes, and unseen local areas.
+
+Naive baseline도 반드시 포함해야 한다. 단순 평균 또는 중앙값 예측보다 충분히 좋아야 모델이 실제 설명력을 가진다고 말할 수 있다.
+
+권장 문장:
+
+> Mean and median prediction baselines are included to verify that the machine-learning models outperform simple non-informative benchmarks.
+
+공간변수의 추가 효과는 단순히 RMSE가 한 번 낮아졌다는 사실만으로 주장하지 않는다. Bootstrap 신뢰구간을 사용해 Group B와 Group A의 RMSE 차이가 안정적인지 확인한다.
+
+권장 문장:
+
+> A bootstrap confidence interval is used to assess the stability of the RMSE improvement from the spatially extended feature set.
+
+해석 기준:
+
+> If the spatially extended model improves performance under random split and the improvement remains directionally consistent under stricter holdout validations, the results can be interpreted as academically meaningful evidence of additional predictive value. If the improvement disappears under strict holdout splits, the conclusion should be limited to random-split predictive performance.
