@@ -1,0 +1,13 @@
+﻿experiment,model,n_rows,n_features_raw,log_target,contract_type_feature,cv_rmse,test_rmse,test_mae,test_r2,best_params
+A_baseline,XGBoost,4470,5,False,False,2504.221785372499,2294.3428519437703,1584.6981711006065,0.8896086439600742,"{'model__colsample_bytree': 0.9, 'model__learning_rate': 0.05, 'model__max_depth': 6, 'model__n_estimators': 300, 'model__subsample': 0.9}"
+A_baseline,RandomForest,4470,5,False,False,2470.9760497704256,2383.548936496413,1619.2815892763651,0.8808575351482273,"{'model__max_depth': None, 'model__min_samples_leaf': 3, 'model__n_estimators': 300}"
+A_baseline,Ridge,4470,5,False,False,3572.2876215922297,3592.042390567131,2744.982414650655,0.7294164804363752,{'model__alpha': 1.0}
+A_location_control_with_dong,XGBoost,4470,6,False,False,2354.2316599045253,2200.9000342752665,1495.341128964901,0.898417459648116,"{'model__colsample_bytree': 0.9, 'model__learning_rate': 0.05, 'model__max_depth': 6, 'model__n_estimators': 300, 'model__subsample': 0.9}"
+A_location_control_with_dong,RandomForest,4470,6,False,False,2351.948911266537,2319.3743136602066,1559.8924068691208,0.8871867472707876,"{'model__max_depth': 20, 'model__min_samples_leaf': 3, 'model__n_estimators': 300}"
+A_location_control_with_dong,Ridge,4470,6,False,False,2969.5177003694653,2960.838028679224,2148.1863357116977,0.816156730360317,{'model__alpha': 1.0}
+B_spatial_extended,XGBoost,4470,13,False,False,2354.1731555968026,2212.2959717665235,1501.4261367895008,0.8973627772212183,"{'model__colsample_bytree': 0.9, 'model__learning_rate': 0.05, 'model__max_depth': 6, 'model__n_estimators': 300, 'model__subsample': 0.9}"
+B_spatial_extended,RandomForest,4470,13,False,False,2337.9511322588096,2298.5858936821032,1542.7354510580565,0.8891999620196438,"{'model__max_depth': None, 'model__min_samples_leaf': 3, 'model__n_estimators': 300}"
+B_spatial_extended,Ridge,4470,13,False,False,3112.588285518411,3114.196519459037,2287.8288888390475,0.7966189594487225,{'model__alpha': 1.0}
+B_spatial_location_control_with_dong,XGBoost,4470,14,False,False,2329.7937166378065,2196.799388877016,1493.2675780199663,0.8987956375891777,"{'model__colsample_bytree': 0.9, 'model__learning_rate': 0.05, 'model__max_depth': 6, 'model__n_estimators': 300, 'model__subsample': 0.9}"
+B_spatial_location_control_with_dong,RandomForest,4470,14,False,False,2325.5654461872027,2315.9785077901693,1543.8336606337616,0.8875168461774893,"{'model__max_depth': 20, 'model__min_samples_leaf': 3, 'model__n_estimators': 300}"
+B_spatial_location_control_with_dong,Ridge,4470,14,False,False,2969.894772885492,2961.1644971129354,2149.1557819842924,0.8161161862085463,{'model__alpha': 1.0}
