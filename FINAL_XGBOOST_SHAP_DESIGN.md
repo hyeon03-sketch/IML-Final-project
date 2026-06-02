@@ -12,7 +12,7 @@
 - 월세 거래는 전세환산보증금으로 변환해 표본에 포함한다.
 - 공간파생변수의 의미는 SHAP으로 확인한다.
 - SHAP에서 공간파생변수 중요도가 높으면 기존 공간변수 논리를 유지한다.
-- SHAP에서 공간파생변수 중요도가 낮으면 공간변수 강조를 줄이고 예측 성능 중심으로 해석한다.
+- SHAP에서 공간파생변수 중요도가 낮거나 읍면동 통제 후 약해지면 공간변수 강조를 줄이고 예측 성능 중심으로 해석한다.
 
 ## 2. Target
 
@@ -39,9 +39,9 @@
 | `A_baseline_no_dong` | 기본 baseline | 전용면적, 층, 건물연령, 계약연도, 계약월 |
 | `B_spatial_no_dong` | 읍면동 없이 공간변수 추가 효과 확인 | A + 바다/공원/학교 변수 |
 | `A_location_baseline` | 행정동 통제 baseline | A + 읍면동 |
-| `B_location_spatial` | 최종 성능 모델 | A + 읍면동 + 바다/공원/학교 변수 |
+| `B_location_spatial` | 읍면동 통제 후 공간변수 효과를 확인하는 보수적 모델 | A + 읍면동 + 바다/공원/학교 변수 |
 
-최종 성능 모델은 `B_location_spatial`이다.
+최종 성능 모델은 고정하지 않고 test RMSE가 가장 낮은 XGBoost feature set으로 선택한다. `B_location_spatial`은 최종 성능 모델이라기보다 읍면동을 이미 통제한 뒤에도 공간변수가 추가 정보를 주는지 확인하는 보수적 모델이다.
 
 ## 4. 제외 변수
 
@@ -65,6 +65,8 @@
    - 읍면동을 통제한 뒤에도 공간변수가 추가 가치를 갖는지 확인
 
 XGBoost에서는 선형회귀처럼 다중공선성 때문에 모델 학습이 직접적으로 깨지지는 않는다. 다만 SHAP 중요도가 `읍면동`과 공간변수 사이에 나뉘어 해석될 수 있으므로, grouped SHAP을 함께 확인한다.
+
+또한 공간파생변수가 동 단위 변수라면 같은 `읍면동` 안에서 값이 일정해야 한다. 최종 Colab은 같은 동 안에서 서로 다른 공간변수 값이 발견될 경우, 모델링 전에 해당 동의 최빈값으로 통일하고 그 결과를 `dong_level_harmonization_report.csv`로 저장한다.
 
 ## 6. Model
 
@@ -105,7 +107,7 @@ Train set 내부에서 5-fold cross validation으로 최적 파라미터를 선�
 
 ## 8. SHAP Interpretation
 
-SHAP은 최종 모델 `B_location_spatial` 기준으로 계산한다.
+SHAP은 test RMSE 기준 최적 XGBoost feature set에 대해 계산한다. 최적 feature set이 `B_location_spatial`과 다르면 `B_location_spatial`에 대해서도 SHAP을 추가 계산한다.
 
 확인할 내용:
 
@@ -116,12 +118,16 @@ SHAP은 최종 모델 `B_location_spatial` 기준으로 계산한다.
 해석 기준:
 
 - 공간변수 SHAP 비중이 충분히 크면 공간파생변수의 중요성을 강조한다.
-- 공간변수 SHAP 비중이 낮으면 예측 성능 중심으로 결론을 조정한다.
+- 공간변수 SHAP 비중이 낮거나 읍면동 통제 후 크게 약해지면 예측 성능 중심으로 결론을 조정한다.
 - `읍면동` 중요도가 매우 크면 행정동 위치효과가 강하다고 해석한다.
+- `건물연령(계약기준)`은 이름에 `계약기준`이 들어가지만 계약시점 변수가 아니라 주택 구조/속성 변수로 분류한다.
 
 ## 9. Robustness Validation
 
-최종 Colab은 `A_location_baseline`과 `B_location_spatial`을 대상으로 다음 strict validation을 수행한다.
+최종 Colab은 다음 두 비교에 대해 strict validation을 수행한다.
+
+1. `B_spatial_no_dong - A_baseline_no_dong`
+2. `B_location_spatial - A_location_baseline`
 
 | Validation | 목적 |
 |---|---|
@@ -130,7 +136,7 @@ SHAP은 최종 모델 `B_location_spatial` 기준으로 계산한다.
 | complex holdout | 학습에 없는 단지 테스트 |
 | dong holdout | 학습에 없는 행정동 테스트 |
 
-이 검증에서도 `B_location_spatial`이 `A_location_baseline`보다 좋은지 확인한다.
+이 검증에서는 no-dong 비교와 location-control 비교에서 각각 공간변수 추가 후 RMSE, MAE, MAPE, R²가 어떻게 변하는지 확인한다.
 
 ## 10. 기존 설계에서 바뀐 점
 
@@ -141,6 +147,15 @@ SHAP은 최종 모델 `B_location_spatial` 기준으로 계산한다.
 | Target | 전세-only 또는 전세환산 실험 분리 | 전세환산보증금 main |
 | 월세 행 | 전세-only에서는 제거 | 전세환산 후 포함 |
 | Scaler | Ridge 때문에 논의 필요 | XGBoost만 사용하므로 scaler 미적용 |
-| 읍면동 | main/supplementary로 분리 | 최종 모델에는 포함, no-dong 비교도 함께 제시 |
+| 읍면동 | main/supplementary로 분리 | RMSE 최적 모델은 자동 선택, 읍면동 포함 모델은 보수적 통제 실험으로 제시 |
 | 해석 | 모델별 성능 비교 | feature set 비교와 SHAP 해석 |
 
+## 11. 실행본에서 발견되어 수정한 문제
+
+| 문제 | 수정 |
+|---|---|
+| 한글 폰트가 설치됐다고 표시되지만 그래프에서 `NanumGothic not found` 경고가 반복됨 | Matplotlib font cache를 지우고 실제 font file name을 읽어 `font.family`와 `font.sans-serif`에 설정 |
+| test RMSE 최고 모델이 `B_spatial_no_dong`인데 `B_location_spatial`을 최종 성능 모델로 고정함 | test RMSE 기준 최적 feature set을 자동 선택하고, `B_location_spatial`은 보수적 location-control 모델로 분리 |
+| SHAP grouped importance에서 `건물연령(계약기준)`이 `contract_time`으로 잘못 분류됨 | `건물연령`을 `housing_structure`로 우선 분류하도록 feature group mapping 수정 |
+| 같은 `읍면동` 안에서 `동_초등학교수`, `동_총학교수` 값이 서로 다르게 나타남 | 동 단위 공간변수를 같은 동 안에서 최빈값으로 통일하고 수정 내역을 별도 CSV로 저장 |
+| strict validation이 읍면동 포함 비교만 수행함 | no-dong spatial comparison과 location-control comparison을 모두 출력하도록 수정 |
